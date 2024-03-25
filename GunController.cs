@@ -13,7 +13,7 @@ public class GunController : MonoBehaviour
     public Transform bulletSpawnPoint; // The position where the bullet spawns
     public float bulletSpeed = 100f; // Speed of the bullet
     public int reloadSpeed = 3;
-
+    public bool isRifle;
 
 
 
@@ -33,7 +33,6 @@ public class GunController : MonoBehaviour
     public float aimSmoothing = 10;
 
     //Reloading the gun
-
     public Vector3 targetReloadPosition;
 
     //Mouse Settings
@@ -47,11 +46,18 @@ public class GunController : MonoBehaviour
     //Only assign if randomized recoil = false
     public Vector2[] recoilPattern;
 
+    //Shooting the gun
+    public Vector3 targetShootRotation;
+    
+
+
     //Weapon Sounds
     public AudioSource weaponFire;
     public AudioSource weaponReload;
     public AudioSource shufflingAim; //ADS Sound Effect
     public AudioSource hitMarker;
+
+
     private void Start()
     {
         _currentAmmoInClip = clipSize;
@@ -142,8 +148,7 @@ public class GunController : MonoBehaviour
     void DetermineAim()
     {
         Vector3 target = normalLoacalPosition;
-        if (Input.GetMouseButton(1))
-            target = aimingLocalPosition;
+        if (Input.GetMouseButton(1)) target = aimingLocalPosition;
 
         Vector3 desiredPosition = Vector3.Lerp(transform.localPosition, target, Time.deltaTime * aimSmoothing);
 
@@ -195,12 +200,55 @@ public class GunController : MonoBehaviour
         Destroy(bullet, 3f); // Adjust the time as needed
 
         RayCastForEnemy();
-
-        yield return new WaitForSeconds(fireRate);
         weaponFire.enabled = true;
         weaponFire.Play(); // Play shooting sound
+        if (isRifle)
+        {
+            yield return new WaitForSeconds(1.1f);
+
+        // Store the current gun rotation before changing it
+        Quaternion previousGunRotation = transform.localRotation;
+
+        // Smoothly interpolate to the target rotation
+        float elapsedTime = 0f;
+        float rotationDuration = 0.2f; // Adjust the duration of rotation
+        while (elapsedTime < rotationDuration)
+        {
+            transform.localRotation = Quaternion.Slerp(previousGunRotation, Quaternion.Euler(targetShootRotation), elapsedTime / rotationDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // Set the gun rotation after shooting
+        transform.localRotation = Quaternion.Euler(targetShootRotation);
+
+        // Wait for a short duration
+        yield return new WaitForSeconds(fireRate);
+
+        // Check if additional rotation is enabled for this gun
+        
+            // Smoothly interpolate back to the original rotation
+            elapsedTime = 0f;
+            while (elapsedTime < rotationDuration)
+            {
+                transform.localRotation = Quaternion.Slerp(transform.localRotation, previousGunRotation, elapsedTime / rotationDuration);
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
+
+            // Reset gun rotation to previous rotation
+            transform.localRotation = previousGunRotation;
+        }
+        if (!isRifle)
+        {
+            yield return new WaitForSeconds(fireRate);
+
+        }
         _canShoot = true;
     }
+
+
+
 
 
     IEnumerator MuzzleFlash()
