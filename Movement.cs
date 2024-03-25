@@ -85,10 +85,10 @@ public class Movement : MonoBehaviour
             else
             {
                 isJumping = false;
-                // Play after jump sound
-                preJump.enabled = false;
-                afterJump.enabled = true;
+
             }
+
+
         }
 
         // Slide when landing
@@ -96,10 +96,17 @@ public class Movement : MonoBehaviour
         {
             slideDirection = move.normalized; // Store the direction the player was facing
             currentSlideSpeed = slideSpeed; // Reset slide speed
+            // Play after jump sound
+            preJump.enabled = false;
+            afterJump.enabled = true;
         }
         else if (isGrounded && slideDirection != Vector3.zero)
         {
+            // Play after jump sound
+            preJump.enabled = false;
+            afterJump.enabled = true;
             StartCoroutine(SlideCoroutine());
+
         }
 
         // Update footstep sound
