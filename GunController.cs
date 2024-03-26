@@ -11,10 +11,12 @@ public class GunController : MonoBehaviour
     public int reservedAmmoCapacity = 270;
     public GameObject bulletPrefab; // Reference to the bullet prefab
     public Transform bulletSpawnPoint; // The position where the bullet spawns
+    public Transform bulletSpawnPointTwo; // The position where the bullet spawns
+
     public float bulletSpeed = 100f; // Speed of the bullet
     public int reloadSpeed = 3;
     public bool isRifle;
-
+    public bool isDualGun;
 
 
     //Variables that change throughout code
@@ -25,6 +27,7 @@ public class GunController : MonoBehaviour
 
     //Muzzle Flash
     public Image muzzleFlashImage;
+    public Image muzzleFlashImageTwo;
     public Sprite[] flashes;
 
     //Aiming the Gun
@@ -181,6 +184,8 @@ public class GunController : MonoBehaviour
         }
     }
 
+
+
     IEnumerator ShootGun()
     {
         DetermineRecoil();
@@ -188,16 +193,29 @@ public class GunController : MonoBehaviour
 
         // Instantiate the bullet prefab
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-
         // Set the tag of the bullet to "knockDown"
         bullet.tag = "knockDown";
-
         // Set the bullet velocity
         Rigidbody bulletRigidbody = bullet.GetComponent<Rigidbody>();
         bulletRigidbody.velocity = transform.parent.forward * bulletSpeed; // Set bullet speed here
 
-        // Destroy the bullet after 5 seconds
-        Destroy(bullet, 3f); // Adjust the time as needed
+        Destroy(bullet, 3f);
+
+        if (isDualGun)
+        {
+            GameObject bullet2 = Instantiate(bulletPrefab, bulletSpawnPointTwo.position, bulletSpawnPointTwo.rotation);
+            bullet2.tag = "knockDown";
+            Rigidbody bullet2Rigidbody = bullet2.GetComponent<Rigidbody>();
+            bullet2Rigidbody.velocity = transform.parent.forward * bulletSpeed; // Set bullet speed here
+
+            Destroy(bullet2, 3f);
+
+        }
+        
+        
+        
+
+
 
         RayCastForEnemy();
         weaponFire.enabled = true;
@@ -206,27 +224,27 @@ public class GunController : MonoBehaviour
         {
             yield return new WaitForSeconds(1.1f);
 
-        // Store the current gun rotation before changing it
-        Quaternion previousGunRotation = transform.localRotation;
+            // Store the current gun rotation before changing it
+            Quaternion previousGunRotation = transform.localRotation;
 
-        // Smoothly interpolate to the target rotation
-        float elapsedTime = 0f;
-        float rotationDuration = 0.2f; // Adjust the duration of rotation
-        while (elapsedTime < rotationDuration)
-        {
-            transform.localRotation = Quaternion.Slerp(previousGunRotation, Quaternion.Euler(targetShootRotation), elapsedTime / rotationDuration);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
+            // Smoothly interpolate to the target rotation
+            float elapsedTime = 0f;
+            float rotationDuration = 0.2f; // Adjust the duration of rotation
+            while (elapsedTime < rotationDuration)
+            {
+                transform.localRotation = Quaternion.Slerp(previousGunRotation, Quaternion.Euler(targetShootRotation), elapsedTime / rotationDuration);
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
 
-        // Set the gun rotation after shooting
-        transform.localRotation = Quaternion.Euler(targetShootRotation);
+            // Set the gun rotation after shooting
+            transform.localRotation = Quaternion.Euler(targetShootRotation);
 
-        // Wait for a short duration
-        yield return new WaitForSeconds(fireRate);
+            // Wait for a short duration
+            yield return new WaitForSeconds(fireRate);
 
-        // Check if additional rotation is enabled for this gun
-        
+            // Check if additional rotation is enabled for this gun
+
             // Smoothly interpolate back to the original rotation
             elapsedTime = 0f;
             while (elapsedTime < rotationDuration)
@@ -251,13 +269,34 @@ public class GunController : MonoBehaviour
 
 
 
+
+
+
     IEnumerator MuzzleFlash()
     {
+        if (muzzleFlashImage.enabled == false)
+        {
+            muzzleFlashImage.enabled = true;
+        }
         muzzleFlashImage.sprite = flashes[Random.Range(0, flashes.Length)];
         muzzleFlashImage.color = Color.white;
         yield return new WaitForSeconds(0.05f);
         muzzleFlashImage.sprite = null;
         muzzleFlashImage.color = new Color(0, 0, 0, 0);
+
+        if(isDualGun)
+        {
+            if (muzzleFlashImageTwo.enabled == false)
+            {
+                muzzleFlashImageTwo.enabled = true;
+            }
+            muzzleFlashImageTwo.sprite = flashes[Random.Range(0, flashes.Length)];
+            muzzleFlashImageTwo.color = Color.white;
+            yield return new WaitForSeconds(0.05f);
+            muzzleFlashImageTwo.sprite = null;
+            muzzleFlashImageTwo.color = new Color(0, 0, 0, 0);
+        }
+
     }
 
    

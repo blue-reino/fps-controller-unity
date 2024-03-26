@@ -10,6 +10,10 @@ public class EnemyAI : MonoBehaviour
     public Transform player;
     public LayerMask Ground, whatIsPlayer;
 
+    //Enemy Stats
+    public int enemyHealth = 100;
+
+
     //Audio
     public AudioSource zSound1Agro;
     public AudioSource zSound2Chase;
@@ -149,41 +153,37 @@ public class EnemyAI : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("knockDown"))
         {
+            /**
             // Stop the NavMeshAgent
             agent.isStopped = true;
-
             // Optionally, you can disable the NavMeshAgent component
             agent.enabled = false;
-
             // Apply a force to the Rigidbody, if it exists
             if (rb != null)
             {
                 // Calculate the force direction (away from the collision point)
                 Vector3 forceDirection = collision.contacts[0].point - transform.position;
                 forceDirection.Normalize();
-
-                float hitForceMagnitude = 15.0f;
-
-                
-
+                float hitForceMagnitude = 15.0f;          
                 if (rb.velocity.magnitude < hitForceThreshold)
                 {
                     hitForceMagnitude = hitForceThreshold - rb.velocity.magnitude;
                 }
-
                 // Apply the force with the hit force threshold
                 rb.AddForce(forceDirection * hitForceMagnitude, ForceMode.Impulse);
 
-
-
             }
-
-           
             StartCoroutine(EnableNavMeshAgentAfterDelay(2f));
+            **/
+            enemyHealth -= 50;
+            if (enemyHealth <= 0)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
-
+    /**
     private IEnumerator EnableNavMeshAgentAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -193,7 +193,7 @@ public class EnemyAI : MonoBehaviour
 
         agent.enabled = true;
     }
-
+    **/
 
 
 
